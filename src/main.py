@@ -4,8 +4,7 @@ FastAPI application for the Technical Documentation Assistant.
 
 import logging
 import os
-from typing import List, Dict, Any, Optional
-from pathlib import Path
+from typing import List, Optional
 
 from fastapi import FastAPI, HTTPException, UploadFile, File, Form, BackgroundTasks
 from fastapi.staticfiles import StaticFiles

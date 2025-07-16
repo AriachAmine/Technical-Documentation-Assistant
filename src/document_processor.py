@@ -2,22 +2,17 @@
 Document processing utilities for parsing various documentation formats.
 """
 
-import os
 import json
 import yaml
 from typing import List, Dict, Any, Optional
 from pathlib import Path
 import logging
-from urllib.parse import urljoin, urlparse
 
 # Import processing libraries
 import markdown
 from bs4 import BeautifulSoup
 import PyPDF2
 import requests
-from openapi_parser import parse
-
-from .config import settings
 
 logger = logging.getLogger(__name__)
 
