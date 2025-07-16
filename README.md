@@ -1,5 +1,7 @@
 # Technical Documentation Assistant 🤖📚
 
+![Technical Documentation Assistant](assests/TechnicalDocumentationAssistant.png)
+
 An intelligent AI-driven system that parses technical documentation and provides contextual answers to developer questions with relevant code examples. Built for freelance portfolio demonstration, showcasing practical AI application in technical processes.
 
 ![Technical Documentation Assistant](https://img.shields.io/badge/AI-Documentation%20Assistant-blue)
