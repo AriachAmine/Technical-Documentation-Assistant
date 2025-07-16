@@ -9,6 +9,10 @@
     --quantum-purple: #6366f1;
     --quantum-green: #00ff88;
     --quantum-glow: #00d4ff;
+
+    --scrollbar-track: 0 0% 96%;
+    --scrollbar-thumb: 220 13% 85%;
+    --scrollbar-thumb-hover: 217 91% 60%;
 }
 
 /* Enhanced loading animation with quantum effects */
@@ -22,6 +26,34 @@
     border-radius: 50%;
     animation: quantumSpin 1s linear infinite;
     box-shadow: 0 0 10px rgba(0, 212, 255, 0.5);
+}
+
+/* Custom Modern Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: hsl(var(--scrollbar-track));
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: hsl(var(--scrollbar-thumb));
+    border-radius: 4px;
+    border: 1px solid hsl(var(--scrollbar-track));
+    transition: all 0.2s ease-in-out;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--scrollbar-thumb-hover));
+    border-color: hsl(var(--scrollbar-thumb-hover));
+    transform: scale(1.1);
+}
+
+::-webkit-scrollbar-corner {
+    background: hsl(var(--scrollbar-track));
 }
 
 @keyframes quantumSpin {

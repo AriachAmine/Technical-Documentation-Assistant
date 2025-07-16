@@ -147,13 +147,20 @@ async def query_documentation(query: QueryRequest):
 @app.post("/api/upload", response_model=DocumentUploadResponse)
 async def upload_documents(
     background_tasks: BackgroundTasks,
-    files: List[UploadFile] = File(...),
+    files: Optional[List[UploadFile]] = File(None),
     urls: Optional[str] = Form(None)
 ):
     """
     Upload and process documentation files or URLs.
     """
     try:
+        # Validate that at least one input is provided
+        if not files and not urls:
+            raise HTTPException(
+                status_code=400, 
+                detail="Please provide either files to upload or URLs to process"
+            )
+        
         processed_files = 0
         total_chunks = 0
         

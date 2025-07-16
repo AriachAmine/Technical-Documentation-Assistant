@@ -78,7 +78,6 @@
         /* Quantum grid pattern */
         .quantum-grid {
             position: relative;
-            overflow: hidden;
         }
 
         .quantum-grid::before {
@@ -336,11 +335,12 @@
             <!-- Upload Section -->
             <div class="lg:col-span-1">
                 <div class="quantum-card rounded-lg shadow-2xl p-6 quantum-glow">
-                    <h2 class="text-lg font-semibold text-cyan-300 mb-4 quantum-text-glow">� Upload Documentation</h2>
+                    <h2 class="text-lg font-semibold text-cyan-300 mb-4 quantum-text-glow">📚 Upload Documentation</h2>
 
                     <!-- File Upload -->
                     <div class="mb-6">
-                        <label class="block text-sm font-medium text-cyan-200 mb-2">⚡ Upload Files</label>
+                        <label class="block text-sm font-medium text-cyan-200 mb-2">⚡ Upload Files <span
+                                class="text-cyan-400 text-xs">(Optional)</span></label>
                         <input type="file" id="fileInput" multiple accept=".md,.html,.pdf,.txt,.json,.yaml,.yml"
                             class="block w-full text-sm text-cyan-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-quantum-bright file:text-cyan-100 hover:file:bg-quantum-purple transition-all">
                         <p class="text-xs text-cyan-400 mt-1">⚛️ Supports: MD, HTML, PDF, TXT, JSON, YAML</p>
@@ -348,21 +348,28 @@
 
                     <!-- URL Input -->
                     <div class="mb-6">
-                        <label class="block text-sm font-medium text-cyan-200 mb-2">🌐 Documentation URLs</label>
-                        <textarea id="urlInput" placeholder="Enter quantum URLs, one per line..."
-                            class="quantum-input w-full px-3 py-2 rounded-md transition-all" rows="3"></textarea>
+                        <label class="block text-sm font-medium text-cyan-200 mb-2">🌐 Documentation URLs <span
+                                class="text-cyan-400 text-xs">(Optional)</span></label>
+                        <textarea id="urlInput"
+                            placeholder="Enter URLs, one per line...&#10;https://docs.example.com/api&#10;https://github.com/user/repo/blob/main/README.md"
+                            class="quantum-input w-full px-3 py-2 rounded-md transition-all" rows="4"></textarea>
+                        <p class="text-xs text-cyan-400 mt-1">🌍 Process web documentation directly</p>
                     </div>
 
-                    <!-- Directory Path -->
+                    <!-- Directory Selection -->
                     <div class="mb-6">
-                        <label class="block text-sm font-medium text-cyan-200 mb-2">📁 Local Directory Path</label>
-                        <input type="text" id="directoryInput" placeholder="C:\quantum\documentation"
-                            class="quantum-input w-full px-3 py-2 rounded-md transition-all">
+                        <label class="block text-sm font-medium text-cyan-200 mb-2">📁 Select Directory <span
+                                class="text-cyan-400 text-xs">(Optional)</span></label>
+                        <input type="file" id="directoryInput" webkitdirectory directory multiple
+                            class="block w-full text-sm text-cyan-200 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-quantum-bright file:text-cyan-100 hover:file:bg-quantum-purple transition-all">
+                        <p class="text-xs text-cyan-400 mt-1">📂 Click to browse and select a directory to process all
+                            supported files</p>
+                        <div id="directoryStatus" class="mt-2 text-xs text-cyan-300 hidden"></div>
                     </div>
 
                     <button id="uploadBtn"
                         class="w-full quantum-button text-white py-3 px-4 rounded-md transition-all font-semibold">
-                        🚀 Process Quantum Data
+                        🚀 Process Documentation
                     </button>
 
                     <!-- Upload Status -->
@@ -397,7 +404,7 @@
                     </div>
 
                     <!-- Chat Messages -->
-                    <div id="chatMessages" class="flex-1 p-6 overflow-y-auto max-h-96 space-y-4 custom-scrollbar">
+                    <div id="chatMessages" class="flex-1 p-6 overflow-y-auto max-h-[32rem] space-y-4 custom-scrollbar">
                         <div class="chat-message quantum-card p-4 rounded-lg border-cyan-500/30">
                             <div class="font-medium text-cyan-300">🤖 Quantum AI</div>
                             <div class="text-cyan-200 mt-1">
@@ -457,6 +464,7 @@
         const fileInput = document.getElementById('fileInput');
         const urlInput = document.getElementById('urlInput');
         const directoryInput = document.getElementById('directoryInput');
+        const directoryStatus = document.getElementById('directoryStatus');
         const uploadBtn = document.getElementById('uploadBtn');
         const uploadStatus = document.getElementById('uploadStatus');
         const questionInput = document.getElementById('questionInput');
@@ -479,6 +487,7 @@
         questionInput.addEventListener('keypress', (e) => {
             if (e.key === 'Enter') askQuestion();
         });
+        directoryInput.addEventListener('change', handleDirectorySelection);
         statsBtn.addEventListener('click', showStatsModal);
         resetBtn.addEventListener('click', resetDatabase);
         closeStatsModal.addEventListener('click', () => {
@@ -489,10 +498,10 @@
             const formData = new FormData();
             const files = fileInput.files;
             const urls = urlInput.value.trim();
-            const directory = directoryInput.value.trim();
+            const directoryFiles = directoryInput.files;
 
-            if (!files.length && !urls && !directory) {
-                showUploadStatus('Please select files, enter URLs, or specify a directory path.', 'error');
+            if (!files.length && !urls && !directoryFiles.length) {
+                showUploadStatus('Please provide at least one input: files to upload, URLs to process, or select a directory.', 'error');
                 return;
             }
 
@@ -501,9 +510,12 @@
             showUploadStatus('Processing documentation...', 'info');
 
             try {
-                if (files.length > 0 || urls) {
+                // Combine regular files and directory files
+                const allFiles = [...files, ...directoryFiles];
+
+                if (allFiles.length > 0 || urls) {
                     // Upload files and URLs
-                    for (let file of files) {
+                    for (let file of allFiles) {
                         formData.append('files', file);
                     }
                     if (urls) {
@@ -523,28 +535,11 @@
                     }
                 }
 
-                if (directory) {
-                    // Process directory
-                    const dirFormData = new FormData();
-                    dirFormData.append('directory_path', directory);
-
-                    const dirResponse = await fetch('/api/upload-directory', {
-                        method: 'POST',
-                        body: dirFormData
-                    });
-
-                    const dirResult = await dirResponse.json();
-                    if (dirResponse.ok) {
-                        showUploadStatus(dirResult.message, 'success');
-                    } else {
-                        showUploadStatus(dirResult.detail || 'Directory processing failed', 'error');
-                    }
-                }
-
                 // Clear inputs
                 fileInput.value = '';
                 urlInput.value = '';
                 directoryInput.value = '';
+                directoryStatus.classList.add('hidden');
 
                 // Reload stats
                 loadStats();
@@ -554,6 +549,22 @@
             } finally {
                 uploadBtn.disabled = false;
                 uploadBtn.textContent = '🚀 Process Documentation';
+            }
+        }
+
+        function handleDirectorySelection() {
+            const files = directoryInput.files;
+            if (files.length > 0) {
+                const supportedExtensions = ['.md', '.markdown', '.html', '.htm', '.pdf', '.txt', '.json', '.yaml', '.yml'];
+                const supportedFiles = Array.from(files).filter(file => {
+                    const extension = file.name.toLowerCase().substring(file.name.lastIndexOf('.'));
+                    return supportedExtensions.includes(extension);
+                });
+
+                directoryStatus.textContent = `📁 Selected ${supportedFiles.length} supported files from ${files.length} total files`;
+                directoryStatus.classList.remove('hidden');
+            } else {
+                directoryStatus.classList.add('hidden');
             }
         }
 
